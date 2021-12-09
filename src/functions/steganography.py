@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
+import base64
 
 
 def get_image(image):
-    return cv2.imdecode(np.fromfile(image, np.uint8), cv2.IMREAD_COLOR)
+    decoded_img = base64.b64decode(image)
+
+    return cv2.imdecode(np.fromstring(decoded_img, np.uint8), -1)
 
 
 def char_generator(message):
@@ -33,7 +36,8 @@ def encode(image, message):
                     img[i - 1][j - 1][0] = next(msg)
                 except StopIteration:
                     img[i - 1][j - 1][0] = 0
-                    return img
+                    _, encoded_img = cv2.imencode(".png", img)
+                    return base64.b64encode(encoded_img)
 
     # cv2.imwrite("image.png", img)
 

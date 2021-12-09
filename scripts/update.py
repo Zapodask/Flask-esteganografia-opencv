@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-project_name = os.path.basename((os.getcwd()))
+cwd = os.getcwd()
+
+project_name = os.path.basename(cwd)
 bucket_name = os.getenv("BUCKET_NAME")
 
 s3_client = boto3.client("s3")
@@ -25,7 +27,6 @@ class update:
         # Variáveis de diretório
         path = os.path.dirname(os.path.realpath(__file__))
         os.chdir(path + "/../")
-        cwd = os.getcwd()
 
         # Remove resquícios da atualização anterior
         try:
@@ -51,7 +52,7 @@ class update:
         shutil.make_archive("build", "zip", "build")
 
         # Remover pasta
-        shutil.rmtree("build")
+        # shutil.rmtree("build")
 
         # Atualizando
         s3_client.upload_file(

@@ -6,8 +6,9 @@ from .functions.steganography import encode, decode
 
 class Encrypt(Resource):
     def post(self):
-        img = request.files.get("image")
-        msg = request.form.get("message")
+        data = request.get_json()
+        img = data.get("image")
+        msg = data.get("message")
 
         if not img:
             return {"error": "missing image"}, 400
@@ -15,14 +16,14 @@ class Encrypt(Resource):
         if not msg:
             return {"error": "missing message"}, 400
 
-        # image = encode(img, msg)
-        # send_file(image, mimetype="image")
-        return {"encrypt": msg}, 200
+        encrypted_image = encode(img, msg)
+
+        return {"encrypted_image": str(encrypted_image)}, 200
 
 
 class Decrypt(Resource):
     def post(self):
-        img = request.files.get("image")
+        img = request.json.get("image")
 
         if not img:
             return {"error": "missing image"}, 400
