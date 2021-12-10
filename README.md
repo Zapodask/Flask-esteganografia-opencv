@@ -15,7 +15,7 @@
 ## Routes
 
 | Route | Method | Body |
-| ------ | ------ | ------ | ------ |
+| ------ | ------ | ------ |
 | encrypt/ | POST | image: base64, message |
 | decrypt/ | POST | image: base64 |
 
