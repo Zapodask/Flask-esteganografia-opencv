@@ -76,35 +76,74 @@ Resources:
           - REGIONAL
       Name: !Ref projectName
 
+  ## Resources
+  encryptResource:
+    Type: AWS::ApiGateway::Resource
+    Properties: 
+      ParentId: !GetAtt apiGateway.RootResourceId
+      PathPart: encrypt
+      RestApiId: !Ref apiGateway
+
+  decryptResource:
+    Type: AWS::ApiGateway::Resource
+    Properties: 
+      ParentId: !GetAtt apiGateway.RootResourceId
+      PathPart: decrypt
+      RestApiId: !Ref apiGateway
+
   ## Methods
-  RootMethodGet:
+  encryptMethodPost:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
-      HttpMethod: GET
+      HttpMethod: POST
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
         Uri: !Sub
           - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
           - lambdaArn: !GetAtt lambdaFunction.Arn
-      ResourceId: !GetAtt apiGateway.RootResourceId
+      ResourceId: !Ref encryptResource
       RestApiId: !Ref apiGateway
+
+  decryptMethodPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations
+          - lambdaArn: !GetAtt lambdaFunction.Arn
+      ResourceId: !Ref decryptResource
+      RestApiId: !Ref apiGateway
+
 
   ## Deployment
   apiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - RootMethodGet
+      - encryptMethodPost
+      - decryptMethodPost
     Properties:
       RestApiId: !Ref apiGateway
       StageName: !Ref apiGatewayStageName
 
   ## Lambda permissions
-  lambdaInvokeUsersGet:
+  lambdaInvokeEncryptPots:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt lambdaFunction.Arn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/${apiGatewayStageName}/GET/
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/${apiGatewayStageName}/POST/encrypt
+
+  lambdaInvokeDecryptPots:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt lambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${apiGateway}/${apiGatewayStageName}/POST/decrypt
